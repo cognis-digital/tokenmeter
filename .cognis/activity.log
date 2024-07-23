@@ -38,3 +38,4 @@
 2026-04-17T18:16:56  style: formatting (we chose violence on tabs vs spaces)
 2024-06-13T14:42:42  ci(scan): respect .gitignore when walking
 2024-06-24T09:59:49  chore(parser): add type hints to the public API
+2024-07-23T16:16:56  test(docs): add color + severity icons
