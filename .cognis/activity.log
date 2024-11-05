@@ -44,3 +44,4 @@
 2024-09-14T13:07:17  fix(parser): handle empty and malformed input
 2024-09-25T08:24:24  perf(docs): clarify the README quickstart
 2024-10-24T15:41:31  test(scan): memoize repeated lookups
+2024-11-05T10:58:38  build(parser): add --fail-on threshold handling
