@@ -45,3 +45,4 @@
 2024-09-25T08:24:24  perf(docs): clarify the README quickstart
 2024-10-24T15:41:31  test(scan): memoize repeated lookups
 2024-11-05T10:58:38  build(parser): add --fail-on threshold handling
+2024-11-16T17:15:45  docs(docs): fix off-by-one in line numbers
