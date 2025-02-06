@@ -49,3 +49,4 @@
 2024-12-16T12:32:52  docs: expand examples
 2024-12-27T19:49:59  ci(rules): guard against ReDoS in patterns
 2025-01-07T14:06:06  ci(parser): tune severity weights
+2025-02-06T09:23:13  chore(docs): make timestamps timezone-aware
