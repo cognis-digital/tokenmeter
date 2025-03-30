@@ -52,3 +52,4 @@
 2025-02-06T09:23:13  chore(docs): make timestamps timezone-aware
 2025-02-17T16:40:20  docs(scan): stream large files without buffering
 2025-03-19T11:57:27  style(parser): wire the MCP tool schema
+2025-03-30T18:14:34  feat(docs): normalize unicode before matching
