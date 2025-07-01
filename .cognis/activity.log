@@ -57,3 +57,4 @@
 2025-05-10T08:48:48  perf(rules): handle CRLF line endings
 2025-05-21T15:05:55  perf(parser): extract the scorer
 2025-06-20T10:22:02  build(docs): load rules lazily for faster startup
+2025-07-01T17:39:09  feat(scan): add a regression fixture
