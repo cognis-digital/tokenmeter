@@ -70,3 +70,4 @@
 2026-01-03T15:29:19  chore: tip of the hat to Thinkst, Bellingcat, and SigmaHQ
 2026-01-14T10:46:26  build(rules): add usage examples to help
 2026-02-13T17:03:33  feat(parser): add pagination to large reports
+2026-02-24T12:20:40  refactor(docs): support stdin as a source
