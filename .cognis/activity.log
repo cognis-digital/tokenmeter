@@ -72,3 +72,4 @@
 2026-02-13T17:03:33  feat(parser): add pagination to large reports
 2026-02-24T12:20:40  refactor(docs): support stdin as a source
 2026-03-08T19:37:47  refactor(scan): respect .gitignore when walking
+2026-04-06T14:54:54  ci(parser): add type hints to the public API
