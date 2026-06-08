@@ -1,34 +1,11 @@
-"""TOKENMETER - Token and cost counter / budgeter for LLM apps, CI-ready.
-
-Standard-library-only, zero-install tool to estimate token counts and dollar
-cost for LLM prompts/completions, and to enforce budgets in CI pipelines.
-"""
-
-from .core import (
-    MODELS,
-    BudgetResult,
-    Estimate,
-    ModelPricing,
-    add_model,
-    count_tokens,
-    estimate,
-    get_pricing,
-    list_models,
-)
-
-TOOL_NAME = "tokenmeter"
-TOOL_VERSION = "1.0.0"
-
-__all__ = [
-    "TOOL_NAME",
-    "TOOL_VERSION",
-    "MODELS",
-    "BudgetResult",
-    "Estimate",
-    "ModelPricing",
-    "add_model",
-    "count_tokens",
-    "estimate",
-    "get_pricing",
-    "list_models",
-]
+"""tokenmeter — part of the Cognis Neural Suite."""
+try:  # re-export the tool's public API + identity from core
+    from tokenmeter.core import *  # noqa: F401,F403
+except Exception:  # pragma: no cover
+    pass
+try:
+    from tokenmeter.core import TOOL_NAME, TOOL_VERSION
+except Exception:  # pragma: no cover
+    TOOL_NAME = "tokenmeter"
+    TOOL_VERSION = "0.1.0"
+__version__ = TOOL_VERSION
