@@ -126,7 +126,17 @@ Pipes into your stack: **SARIF** for code-scanning, **JSON** for anything, an **
 <div align="right"><a href="#top">↑ back to top</a></div>
 
 <a name="install-anywhere"></a>
-## Install anywhere
+## Install — every way, every platform
+
+```bash
+pip install "git+https://github.com/cognis-digital/tokenmeter.git"    # pip (works today)
+pipx install "git+https://github.com/cognis-digital/tokenmeter.git"   # isolated CLI
+uv tool install "git+https://github.com/cognis-digital/tokenmeter.git" # uv
+pip install cognis-tokenmeter                                          # PyPI (when published)
+docker run --rm ghcr.io/cognis-digital/tokenmeter:latest --help        # Docker
+brew install cognis-digital/tap/tokenmeter                             # Homebrew tap
+curl -fsSL https://raw.githubusercontent.com/cognis-digital/tokenmeter/main/install.sh | sh
+```
 
 | Linux | macOS | Windows | Docker | Cloud |
 |---|---|---|---|---|
