@@ -36,9 +36,13 @@ AI cost control
 <a name="features"></a>
 ## Features
 
-- ✅ Todo
-- ✅ Fixme
-- ✅ Xxx
+- ✅ Add Model
+- ✅ Get Pricing
+- ✅ List Models
+- ✅ Count Tokens
+- ✅ Estimate
+- ✅ Check Budget
+- ✅ Aggregate
 - ✅ Runs on Linux/macOS/Windows · Docker · devcontainer
 - ✅ Ports in Python, JavaScript, Go, and Rust (`ports/`)
 
