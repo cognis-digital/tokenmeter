@@ -12,7 +12,6 @@ from .core import (
     aggregate,
     check_budget,
     estimate,
-    get_pricing,
     list_models,
 )
 

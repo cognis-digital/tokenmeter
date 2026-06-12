@@ -16,7 +16,7 @@
 </div>
 
 ```bash
-pip install cognis-tokenmeter
+pip install "git+https://github.com/cognis-digital/tokenmeter.git"
 tokenmeter scan .            # → prioritized findings in seconds
 ```
 
@@ -52,7 +52,7 @@ AI cost control
 ## Quick start
 
 ```bash
-pip install cognis-tokenmeter
+pip install "git+https://github.com/cognis-digital/tokenmeter.git"
 tokenmeter --version
 tokenmeter scan .                       # scan current project
 tokenmeter scan . --format json         # machine-readable
