@@ -20,6 +20,40 @@ pip install cognis-tokenmeter
 tokenmeter scan .            # → prioritized findings in seconds
 ```
 
+## Usage — step by step
+
+1. **Install** (Python 3.9+):
+
+   ```bash
+   pip install tokenmeter
+   ```
+
+2. **Count tokens and estimate cost** for some text or a file, against a pricing model:
+
+   ```bash
+   tokenmeter count -f prompt.txt -m claude-sonnet --output-tokens 500
+   tokenmeter count -t "hello world" -m claude-sonnet
+   ```
+
+3. **List known models** and their pricing:
+
+   ```bash
+   tokenmeter models --format json | jq .
+   ```
+
+4. **Batch-estimate** many files and roll them up:
+
+   ```bash
+   tokenmeter batch prompts/*.txt -m claude-sonnet
+   ```
+
+5. **Gate a budget in CI.** `budget` exits `1` when the cost/token cap is exceeded:
+
+   ```bash
+   tokenmeter budget -f prompt.txt -m claude-sonnet --max-cost 0.05 || echo "Over budget"
+   ```
+
+
 ## Contents
 
 - [Why tokenmeter?](#why) · [Features](#features) · [Quick start](#quick-start) · [Example](#example) · [Architecture](#architecture) · [AI stack](#ai-stack) · [How it compares](#how-it-compares) · [Integrations](#integrations) · [Install anywhere](#install-anywhere) · [Related](#related) · [Contributing](#contributing)
