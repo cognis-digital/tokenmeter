@@ -16,9 +16,15 @@
 </div>
 
 ```bash
-pip install cognis-tokenmeter
+pip install "git+https://github.com/cognis-digital/tokenmeter.git"
 tokenmeter scan .            # → prioritized findings in seconds
 ```
+
+<!-- cognis:layman:start -->
+## What is this?
+
+Tokenmeter is a command-line tool that tells you how many tokens your text will use and how much it will cost when sent to an AI model like GPT-4 or Claude. You give it text or a file, choose a model, and it instantly calculates the token count and estimated price in US dollars. It also lets you set a budget limit so your scripts or CI pipelines automatically fail if a request would cost too much. It is designed for developers who want to track and control AI API spending without surprises.
+<!-- cognis:layman:end -->
 
 ## Contents
 
@@ -49,10 +55,56 @@ AI cost control
 <div align="right"><a href="#top">↑ back to top</a></div>
 
 <a name="quick-start"></a>
+<!-- cognis:domains:start -->
+## Domains
+
+**Primary domain:** Finance & Quant  ·  **JTF MERIDIAN division:** BLACKBOOK · ORACLE
+
+**Topics:** `cognis` `finance` `fintech` `quant`
+
+Part of the **Cognis Neural Suite** — 300+ source-available tools organized across 12 domains under the JTF MERIDIAN command structure. See the [suite on GitHub](https://github.com/cognis-digital) and [jtf-meridian](https://github.com/cognis-digital/jtf-meridian) for how the pieces fit together.
+<!-- cognis:domains:end -->
+
+<!-- cognis:install:start -->
+## Install
+
+`tokenmeter` is source-available (not published to PyPI) — every method below installs
+straight from GitHub. Pick whichever you prefer; the one-line scripts auto-detect
+the best tool available on your machine.
+
+**One-liner (Linux / macOS):**
+```sh
+curl -fsSL https://raw.githubusercontent.com/cognis-digital/tokenmeter/HEAD/install.sh | sh
+```
+
+**One-liner (Windows PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/cognis-digital/tokenmeter/HEAD/install.ps1 | iex
+```
+
+**Or install manually — any one of:**
+```sh
+pipx install "git+https://github.com/cognis-digital/tokenmeter.git"     # isolated (recommended)
+uv tool install "git+https://github.com/cognis-digital/tokenmeter.git"  # uv
+pip install "git+https://github.com/cognis-digital/tokenmeter.git"      # pip
+```
+
+**From source:**
+```sh
+git clone https://github.com/cognis-digital/tokenmeter.git
+cd tokenmeter && pip install .
+```
+
+Then run:
+```sh
+tokenmeter --help
+```
+<!-- cognis:install:end -->
+
 ## Quick start
 
 ```bash
-pip install cognis-tokenmeter
+pip install "git+https://github.com/cognis-digital/tokenmeter.git"
 tokenmeter --version
 tokenmeter scan .                       # scan current project
 tokenmeter scan . --format json         # machine-readable

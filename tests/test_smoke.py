@@ -1,15 +1,20 @@
 """Smoke tests for TOKENMETER."""
-from tokenmeter.core import scan, TOOL_NAME, TOOL_VERSION
+from tokenmeter.core import TOOL_NAME, TOOL_VERSION, count_tokens, estimate, check_budget
+
 
 def test_identity():
     assert TOOL_NAME and TOOL_VERSION
 
-def test_scan_runs(tmp_path):
+
+def test_count_tokens_basic(tmp_path):
+    # Write a file with known text and confirm token counting works on the text.
     f = tmp_path / "x.txt"
-    f.write_text("a TODO here\nFIXME later\n")
-    res = scan(str(tmp_path))
-    assert res.score >= 0
-    assert any("TODO" in fi.title or "FIXME" in fi.title for fi in res.findings)
+    f.write_text("hello world this is a test\n")
+    text = f.read_text()
+    result = count_tokens(text)
+    assert result >= 1
+    assert isinstance(result, int)
+
 
 def test_cli_importable():
     from tokenmeter.cli import main
