@@ -17,6 +17,9 @@ import re
 from dataclasses import dataclass, field
 from typing import Dict, Iterable, List, Optional
 
+TOOL_NAME: str = "tokenmeter"
+TOOL_VERSION: str = "0.7.7"
+
 
 @dataclass(frozen=True)
 class ModelPricing:
