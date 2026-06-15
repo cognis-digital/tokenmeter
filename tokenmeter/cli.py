@@ -20,8 +20,12 @@ def _read_input(args: argparse.Namespace) -> str:
     if getattr(args, "text", None) is not None:
         return args.text
     if getattr(args, "file", None):
-        with open(args.file, "r", encoding="utf-8", errors="replace") as fh:
-            return fh.read()
+        try:
+            with open(args.file, "r", encoding="utf-8", errors="replace") as fh:
+                return fh.read()
+        except OSError as exc:
+            print(f"error: cannot read file {args.file!r}: {exc}", file=sys.stderr)
+            raise SystemExit(2) from exc
     # No explicit source: read stdin if piped.
     if not sys.stdin.isatty():
         return sys.stdin.read()
@@ -34,7 +38,10 @@ def _emit(payload: dict, fmt: str, rows: Optional[List[tuple]] = None) -> None:
         return
     # table
     if rows is not None:
-        widths = [max(len(str(r[i])) for r in rows) for i in range(len(rows[0]))]
+        if not rows:
+            return
+        ncols = len(rows[0])
+        widths = [max(len(str(r[i])) for r in rows) for i in range(ncols)]
         for r in rows:
             print("  ".join(str(c).ljust(widths[i]) for i, c in enumerate(r)))
         return
@@ -43,6 +50,9 @@ def _emit(payload: dict, fmt: str, rows: Optional[List[tuple]] = None) -> None:
 
 
 def _cmd_count(args: argparse.Namespace) -> int:
+    if args.output_tokens < 0:
+        print("error: --output-tokens must be >= 0", file=sys.stderr)
+        return 2
     text = _read_input(args)
     est = estimate(
         text,
@@ -66,6 +76,15 @@ def _cmd_count(args: argparse.Namespace) -> int:
 
 
 def _cmd_budget(args: argparse.Namespace) -> int:
+    if args.output_tokens < 0:
+        print("error: --output-tokens must be >= 0", file=sys.stderr)
+        return 2
+    if args.max_cost is not None and args.max_cost < 0:
+        print("error: --max-cost must be >= 0", file=sys.stderr)
+        return 2
+    if args.max_tokens is not None and args.max_tokens < 0:
+        print("error: --max-tokens must be >= 0", file=sys.stderr)
+        return 2
     text = _read_input(args)
     est = estimate(text, model=args.model, output_tokens=args.output_tokens)
     result = check_budget(

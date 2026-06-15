@@ -54,7 +54,18 @@ def add_model(
     name: str, input_per_1k: float, output_per_1k: float, context_window: int = 8192
 ) -> ModelPricing:
     """Register or override a model's pricing at runtime."""
-    p = ModelPricing(name, float(input_per_1k), float(output_per_1k), int(context_window))
+    if not name or not isinstance(name, str):
+        raise ValueError("model name must be a non-empty string")
+    in_price = float(input_per_1k)
+    out_price = float(output_per_1k)
+    ctx = int(context_window)
+    if in_price < 0:
+        raise ValueError(f"input_per_1k must be >= 0, got {in_price}")
+    if out_price < 0:
+        raise ValueError(f"output_per_1k must be >= 0, got {out_price}")
+    if ctx <= 0:
+        raise ValueError(f"context_window must be > 0, got {ctx}")
+    p = ModelPricing(name, in_price, out_price, ctx)
     MODELS[name] = p
     return p
 
@@ -87,6 +98,8 @@ def count_tokens(text: str) -> int:
         BPE tends to split numbers), min 1.
       * Single punctuation/symbol: 1 token.
     """
+    if text is None:
+        return 0
     if not text:
         return 0
 
@@ -148,7 +161,11 @@ def estimate(
     """
     pricing = get_pricing(model)
     in_tok = count_tokens(text) if input_tokens is None else int(input_tokens)
+    if in_tok < 0:
+        raise ValueError(f"input_tokens must be >= 0, got {in_tok}")
     out_tok = int(output_tokens)
+    if out_tok < 0:
+        raise ValueError(f"output_tokens must be >= 0, got {out_tok}")
     in_cost = in_tok / 1000.0 * pricing.input_per_1k
     out_cost = out_tok / 1000.0 * pricing.output_per_1k
     used = in_tok + out_tok
