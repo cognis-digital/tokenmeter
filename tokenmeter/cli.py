@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import csv
+import io
 import json
 import sys
 from typing import List, Optional
@@ -11,10 +13,20 @@ from . import TOOL_NAME, TOOL_VERSION
 from .core import (
     aggregate,
     check_budget,
+    compare_models,
     estimate,
     get_pricing,
     list_models,
 )
+
+
+def _csv(rows: List[tuple]) -> None:
+    """Write rows (first row = header) as CSV to stdout."""
+    buf = io.StringIO()
+    writer = csv.writer(buf, lineterminator="\n")
+    for r in rows:
+        writer.writerow(r)
+    sys.stdout.write(buf.getvalue())
 
 
 def _read_input(args: argparse.Namespace) -> str:
@@ -32,6 +44,9 @@ def _read_input(args: argparse.Namespace) -> str:
 def _emit(payload: dict, fmt: str, rows: Optional[List[tuple]] = None) -> None:
     if fmt == "json":
         print(json.dumps(payload, indent=2, sort_keys=True))
+        return
+    if fmt == "csv" and rows is not None:
+        _csv(rows)
         return
     # table
     if rows is not None:
@@ -109,7 +124,7 @@ def _cmd_models(args: argparse.Namespace) -> int:
             rows.append(
                 (m.name, f"{m.input_per_1k:.5f}", f"{m.output_per_1k:.5f}", m.context_window)
             )
-        _emit(payload, "table", rows)
+        _emit(payload, args.format, rows)
     return 0
 
 
@@ -141,7 +156,7 @@ def _cmd_batch(args: argparse.Namespace) -> int:
         for p, e in per_file:
             rows.append((p, e.input_tokens, f"{e.total_cost:.6f}"))
         rows.append(("TOTAL", roll["total_tokens"], f"{roll['total_cost_usd']:.6f}"))
-        _emit(payload, "table", rows)
+        _emit(payload, args.format, rows)
 
     if args.max_cost is not None and roll["total_cost_usd"] > args.max_cost:
         print(
@@ -150,6 +165,40 @@ def _cmd_batch(args: argparse.Namespace) -> int:
             file=sys.stderr,
         )
         return 1
+    return 0
+
+
+def _cmd_compare(args: argparse.Namespace) -> int:
+    text = _read_input(args)
+    models = args.models.split(",") if getattr(args, "models", None) else None
+    try:
+        ests = compare_models(
+            text, output_tokens=args.output_tokens, models=models
+        )
+    except KeyError as exc:
+        print(f"error: {exc.args[0] if exc.args else exc}", file=sys.stderr)
+        return 2
+    payload = {
+        "output_tokens": args.output_tokens,
+        "input_tokens": ests[0].input_tokens if ests else 0,
+        "ranking": [e.to_dict() for e in ests],
+    }
+    if args.format == "json":
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return 0
+    rows = [("model", "in_tok", "out_tok", "total_cost_usd", "ctx_used_%")]
+    for e in ests:
+        d = e.to_dict()
+        rows.append(
+            (
+                d["model"],
+                d["input_tokens"],
+                d["output_tokens"],
+                f"{d['total_cost_usd']:.6f}",
+                f"{d['context_used_pct']}",
+            )
+        )
+    _emit(payload, args.format, rows)
     return 0
 
 
@@ -163,7 +212,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument(
         "--format",
-        choices=("table", "json"),
+        choices=("table", "json", "csv"),
         default=None,
         help="output format (default: table)",
     )
@@ -173,7 +222,7 @@ def build_parser() -> argparse.ArgumentParser:
         sp.add_argument(
             "--format",
             dest="sub_format",
-            choices=("table", "json"),
+            choices=("table", "json", "csv"),
             default=None,
             help="output format (default: table)",
         )
@@ -214,6 +263,26 @@ def build_parser() -> argparse.ArgumentParser:
     bt.add_argument("-m", "--model", default="claude-sonnet", help="pricing model id")
     bt.add_argument("--max-cost", type=float, help="max total USD for the batch")
     bt.set_defaults(func=_cmd_batch)
+
+    cmp = sub.add_parser(
+        "compare", help="estimate one workload across all models, cheapest first"
+    )
+    add_format(cmp)
+    g = cmp.add_mutually_exclusive_group()
+    g.add_argument("-t", "--text", help="literal text to measure")
+    g.add_argument("-f", "--file", help="read text from a file")
+    cmp.add_argument(
+        "-o",
+        "--output-tokens",
+        type=int,
+        default=0,
+        help="expected completion tokens (for cost)",
+    )
+    cmp.add_argument(
+        "--models",
+        help="comma-separated subset of models to compare (default: all)",
+    )
+    cmp.set_defaults(func=_cmd_compare)
 
     return p
 

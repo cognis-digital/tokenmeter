@@ -17,7 +17,7 @@
 
 ```bash
 pip install cognis-tokenmeter
-tokenmeter scan .            # → prioritized findings in seconds
+tokenmeter count -f prompt.txt -m claude-sonnet -o 500   # tokens + cost in ms
 ```
 
 ## Usage — step by step
@@ -53,6 +53,35 @@ tokenmeter scan .            # → prioritized findings in seconds
    tokenmeter budget -f prompt.txt -m claude-sonnet --max-cost 0.05 || echo "Over budget"
    ```
 
+6. **Compare every model for one workload**, cheapest first, and export it:
+
+   ```bash
+   tokenmeter compare -f prompt.txt -o 500                 # ranked table
+   tokenmeter compare -f prompt.txt -o 500 --format csv    # for a spreadsheet
+   tokenmeter models  --format csv                         # the whole price book
+   ```
+
+   `count`, `models`, `batch`, and `compare` all support `--format csv` for
+   FinOps spreadsheets and dashboards, alongside `table` and `json`.
+
+### Worked demos
+
+Each folder under [`tokenmeter/demos/`](tokenmeter/demos) is a real-use-case
+scenario with an input file in the tool's real input format, a `SCENARIO.md`
+explaining where the data came from and how to act, and exact run commands:
+
+| Demo | Scenario |
+|---|---|
+| [`01-basic`](tokenmeter/demos/01-basic) | Budget an LLM system prompt in CI |
+| [`02-rag-context`](tokenmeter/demos/02-rag-context) | Size an assembled RAG prompt before sending |
+| [`03-model-selection`](tokenmeter/demos/03-model-selection) | Pick the cheapest model with `compare` |
+| [`04-batch-prompt-library`](tokenmeter/demos/04-batch-prompt-library) | Roll up a whole prompt library with `batch` |
+| [`05-chat-transcript`](tokenmeter/demos/05-chat-transcript) | Cost of continuing a multi-turn chat |
+| [`06-context-window-guard`](tokenmeter/demos/06-context-window-guard) | Catch a context-window overflow before the API does |
+| [`07-fewshot-vs-zeroshot`](tokenmeter/demos/07-fewshot-vs-zeroshot) | Quantify the recurring cost of few-shot examples |
+| [`08-csv-finops`](tokenmeter/demos/08-csv-finops) | Export per-step agent cost as CSV for finance |
+| [`09-stdin-pipeline`](tokenmeter/demos/09-stdin-pipeline) | Measure anything piped on stdin (e.g. a `git diff`) |
+
 
 ## Contents
 
@@ -77,6 +106,8 @@ AI cost control
 - ✅ Estimate
 - ✅ Check Budget
 - ✅ Aggregate
+- ✅ Compare models (rank one workload by cost, cheapest first)
+- ✅ Output as table · JSON · CSV (CSV for FinOps spreadsheets)
 - ✅ Runs on Linux/macOS/Windows · Docker · devcontainer
 - ✅ Ports in Python, JavaScript, Go, and Rust (`ports/`)
 
@@ -88,9 +119,10 @@ AI cost control
 ```bash
 pip install cognis-tokenmeter
 tokenmeter --version
-tokenmeter scan .                       # scan current project
-tokenmeter scan . --format json         # machine-readable
-tokenmeter scan . --fail-on high        # CI gate (non-zero exit)
+tokenmeter count -t "hello world" -m claude-sonnet      # count + cost
+tokenmeter count -f prompt.txt -m gpt-4o --format json  # machine-readable
+tokenmeter budget -f prompt.txt -m claude-opus --max-cost 0.01   # CI gate (exit 1)
+tokenmeter compare -f prompt.txt -o 500                 # rank models by cost
 ```
 
 <div align="right"><a href="#top">↑ back to top</a></div>
@@ -99,11 +131,13 @@ tokenmeter scan . --fail-on high        # CI gate (non-zero exit)
 ## Example
 
 ```text
-$ tokenmeter scan .
-  [HIGH    ] TOK-001  example finding             (./src/app.py)
-  [MEDIUM  ] TOK-002  another signal              (./config.yaml)
-
-  2 findings · risk score 5 · 38ms
+$ tokenmeter compare -f prompt.txt -o 500
+model          in_tok  out_tok  total_cost_usd  ctx_used_%
+gpt-4o-mini    476     500      0.000371        0.76
+claude-haiku   476     500      0.002381        0.49
+gpt-4o         476     500      0.006190        0.76
+claude-sonnet  476     500      0.008928        0.49
+claude-opus    476     500      0.044640        0.49
 ```
 
 <div align="right"><a href="#top">↑ back to top</a></div>

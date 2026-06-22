@@ -212,6 +212,34 @@ def check_budget(
     )
 
 
+def compare_models(
+    text: str = "",
+    *,
+    input_tokens: Optional[int] = None,
+    output_tokens: int = 0,
+    models: Optional[Iterable[str]] = None,
+) -> List[Estimate]:
+    """Estimate the same workload across many models, cheapest first.
+
+    Useful for model-selection decisions: feed one prompt (or an explicit
+    input/output token count) and see what every pricing model would charge,
+    ranked by total cost ascending. Defaults to every model in ``MODELS``.
+    """
+    names = list(models) if models is not None else sorted(MODELS)
+    out: List[Estimate] = []
+    for name in names:
+        out.append(
+            estimate(
+                text,
+                model=name,
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+            )
+        )
+    out.sort(key=lambda e: (e.total_cost, e.model))
+    return out
+
+
 def aggregate(estimates: Iterable[Estimate]) -> dict:
     """Sum a batch of estimates (e.g. many files) into one rollup."""
     items = list(estimates)

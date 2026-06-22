@@ -20,8 +20,9 @@ from tokenmeter import (
     count_tokens,
     estimate,
     get_pricing,
+    list_models,
 )
-from tokenmeter.core import add_model, aggregate, check_budget
+from tokenmeter.core import add_model, aggregate, check_budget, compare_models
 from tokenmeter import cli
 
 
@@ -110,6 +111,32 @@ class TestBudget(unittest.TestCase):
         self.assertEqual(roll["total_tokens"], 3 * ests[0].input_tokens)
 
 
+class TestCompare(unittest.TestCase):
+    def test_ranked_cheapest_first(self):
+        ests = compare_models("hello world this is a prompt", output_tokens=500)
+        costs = [e.total_cost for e in ests]
+        self.assertEqual(costs, sorted(costs))
+        # every known model is represented
+        self.assertEqual(len(ests), len(list_models()))
+
+    def test_same_input_tokens_across_models(self):
+        ests = compare_models("the quick brown fox", output_tokens=0)
+        self.assertEqual(len({e.input_tokens for e in ests}), 1)
+
+    def test_subset(self):
+        ests = compare_models(
+            "x y z", output_tokens=10, models=["claude-opus", "gpt-4o-mini"]
+        )
+        names = {e.model for e in ests}
+        self.assertEqual(names, {"claude-opus", "gpt-4o-mini"})
+        # cheapest first => gpt-4o-mini before claude-opus
+        self.assertEqual(ests[0].model, "gpt-4o-mini")
+
+    def test_unknown_model_raises(self):
+        with self.assertRaises(KeyError):
+            compare_models("x", models=["totally-fake"])
+
+
 class TestCLI(unittest.TestCase):
     def _run(self, argv):
         out = io.StringIO()
@@ -152,6 +179,50 @@ class TestCLI(unittest.TestCase):
     def test_unknown_model_exit_2(self):
         code, _ = self._run(["count", "-t", "x", "-m", "nope"])
         self.assertEqual(code, 2)
+
+    def test_compare_json_ranked(self):
+        code, out = self._run(
+            ["compare", "-t", "hello world", "-o", "100", "--format", "json"]
+        )
+        self.assertEqual(code, 0)
+        data = json.loads(out)
+        ranking = data["ranking"]
+        costs = [r["total_cost_usd"] for r in ranking]
+        self.assertEqual(costs, sorted(costs))
+
+    def test_compare_subset_csv(self):
+        code, out = self._run(
+            [
+                "compare",
+                "-t",
+                "hi there",
+                "-o",
+                "50",
+                "--models",
+                "claude-opus,gpt-4o-mini",
+                "--format",
+                "csv",
+            ]
+        )
+        self.assertEqual(code, 0)
+        lines = [ln for ln in out.strip().splitlines() if ln]
+        self.assertEqual(lines[0], "model,in_tok,out_tok,total_cost_usd,ctx_used_%")
+        self.assertEqual(len(lines), 3)  # header + 2 models
+
+    def test_compare_unknown_model_exit_2(self):
+        code, _ = self._run(["compare", "-t", "x", "--models", "nope"])
+        self.assertEqual(code, 2)
+
+    def test_models_csv(self):
+        code, out = self._run(["models", "--format", "csv"])
+        self.assertEqual(code, 0)
+        self.assertTrue(out.startswith("model,in/1k,out/1k,context"))
+
+    def test_count_csv(self):
+        code, out = self._run(["count", "-t", "hello world", "--format", "csv"])
+        self.assertEqual(code, 0)
+        self.assertTrue(out.startswith("metric,value"))
+        self.assertIn("input_tokens", out)
 
 
 if __name__ == "__main__":
