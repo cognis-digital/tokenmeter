@@ -125,11 +125,41 @@ options:
    `count`, `models`, `batch`, and `compare` all support `--format csv` for
    FinOps spreadsheets and dashboards, alongside `table` and `json`.
 
-### Worked demos
+## Demos
+
+Five runnable scenarios in [`demos/`](demos/) drive the **real** `tokenmeter`
+API against bundled, offline fixtures — no network, no API keys, no heavy deps.
+Each is narrated, audience-specific, and exits 0, so they double as smoke tests.
+Full write-up: [`docs/DEMOS.md`](docs/DEMOS.md).
+
+```bash
+python demos/run_all.py                  # all five, end to end (exit 0)
+python demos/03_ci_budget_gate.py        # or just one
+```
+
+```mermaid
+flowchart LR
+    fx["bundled fixtures<br/>tokenmeter/demos/*"] --> api["tokenmeter.core<br/>estimate · check_budget · compare · aggregate"]
+    api --> d1["01 AI app prompt cost"]
+    api --> d2["02 FinOps model selection"]
+    api --> d3["03 CI budget gate"]
+    api --> d4["04 prompt-library rollup"]
+    api --> d5["05 RAG context budget"]
+```
+
+| Demo | Audience | Scenario |
+|---|---|---|
+| [`01_ai_app_prompt_cost`](demos/01_ai_app_prompt_cost.py) | AI app devs | What one call costs across models, projected to daily volume |
+| [`02_finops_model_selection`](demos/02_finops_model_selection.py) | FinOps / platform | Rank one workload cheapest-first; forecast the day-rate |
+| [`03_ci_budget_gate`](demos/03_ci_budget_gate.py) | CI / release eng | Cost + context-window gates that fail the build like a linter |
+| [`04_eng_manager_prompt_library`](demos/04_eng_manager_prompt_library.py) | Eng managers | Roll up a whole prompt library into one number |
+| [`05_rag_context_budget`](demos/05_rag_context_budget.py) | RAG / context eng | Size the assembled RAG prompt; quantify the few-shot tax |
+
+### Worked CLI demos
 
 Each folder under [`tokenmeter/demos/`](tokenmeter/demos) is a real-use-case
 scenario with an input file in the tool's real input format, a `SCENARIO.md`
-explaining where the data came from and how to act, and exact run commands:
+explaining where the data came from and how to act, and exact CLI commands:
 
 | Demo | Scenario |
 |---|---|
