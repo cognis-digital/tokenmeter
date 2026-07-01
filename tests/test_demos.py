@@ -21,6 +21,21 @@ SCENARIOS = [
     "03_ci_budget_gate",
     "04_eng_manager_prompt_library",
     "05_rag_context_budget",
+    "06_chat_transcript_cost",
+    "07_context_window_guard",
+    "08_diff_review_cost",
+    "09_fewshot_tax",
+    "10_classifier_router",
+    "11_agent_step_budget",
+    "12_prompt_diet",
+    "13_rag_chunk_tuning",
+    "14_multi_model_portfolio",
+    "15_streaming_output_forecast",
+    "16_batch_library_audit",
+    "17_custom_model_pricing",
+    "18_json_output_pipeline",
+    "19_regression_guard",
+    "20_full_month_forecast",
 ]
 
 

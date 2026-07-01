@@ -17,6 +17,12 @@ import re
 from dataclasses import dataclass, field
 from typing import Dict, Iterable, List, Optional
 
+# Tool identity. Kept here (not just in __init__) so `from tokenmeter.core import
+# TOOL_NAME, TOOL_VERSION` — the path __init__ documents and prefers — actually
+# resolves instead of silently falling back.
+TOOL_NAME = "tokenmeter"
+TOOL_VERSION = "0.1.1"
+
 
 @dataclass(frozen=True)
 class ModelPricing:
@@ -50,8 +56,25 @@ MODELS: Dict[str, ModelPricing] = {
 def add_model(
     name: str, input_per_1k: float, output_per_1k: float, context_window: int = 8192
 ) -> ModelPricing:
-    """Register or override a model's pricing at runtime."""
-    p = ModelPricing(name, float(input_per_1k), float(output_per_1k), int(context_window))
+    """Register or override a model's pricing at runtime.
+
+    Raises ``ValueError`` on a blank name, non-numeric prices, negative prices,
+    or a non-positive context window — a mispriced model would silently corrupt
+    every downstream estimate, so we fail loudly at registration time instead.
+    """
+    if not name or not str(name).strip():
+        raise ValueError("model name must be a non-empty string")
+    try:
+        in_price = float(input_per_1k)
+        out_price = float(output_per_1k)
+        ctx = int(context_window)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"model pricing must be numeric: {exc}") from exc
+    if in_price < 0 or out_price < 0:
+        raise ValueError("model prices must be non-negative")
+    if ctx <= 0:
+        raise ValueError("context_window must be a positive integer")
+    p = ModelPricing(name, in_price, out_price, ctx)
     MODELS[name] = p
     return p
 
@@ -84,6 +107,10 @@ def count_tokens(text: str) -> int:
         BPE tends to split numbers), min 1.
       * Single punctuation/symbol: 1 token.
     """
+    if text is None:
+        return 0
+    if not isinstance(text, str):
+        raise TypeError(f"count_tokens expects str, got {type(text).__name__}")
     if not text:
         return 0
 
@@ -144,8 +171,15 @@ def estimate(
     is the expected/observed completion length (defaults to 0).
     """
     pricing = get_pricing(model)
-    in_tok = count_tokens(text) if input_tokens is None else int(input_tokens)
+    if input_tokens is not None:
+        in_tok = int(input_tokens)
+        if in_tok < 0:
+            raise ValueError(f"input_tokens must be >= 0, got {in_tok}")
+    else:
+        in_tok = count_tokens(text)
     out_tok = int(output_tokens)
+    if out_tok < 0:
+        raise ValueError(f"output_tokens must be >= 0, got {out_tok}")
     in_cost = in_tok / 1000.0 * pricing.input_per_1k
     out_cost = out_tok / 1000.0 * pricing.output_per_1k
     used = in_tok + out_tok

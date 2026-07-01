@@ -175,8 +175,11 @@ def _cmd_compare(args: argparse.Namespace) -> int:
         ests = compare_models(
             text, output_tokens=args.output_tokens, models=models
         )
-    except KeyError as exc:
+    except (KeyError, ValueError) as exc:
         print(f"error: {exc.args[0] if exc.args else exc}", file=sys.stderr)
+        return 2
+    if not ests:
+        print("error: no models to compare", file=sys.stderr)
         return 2
     payload = {
         "output_tokens": args.output_tokens,
@@ -302,7 +305,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     except KeyError as exc:
         print(f"error: {exc.args[0] if exc.args else exc}", file=sys.stderr)
         return 2
-    except FileNotFoundError as exc:
+    except (ValueError, FileNotFoundError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
     except BrokenPipeError:
